@@ -1,6 +1,9 @@
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
+const url = require('url');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -10,6 +13,9 @@ app.use(morgan('dev'));
 // Set up body-parser middleware to parse request bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+// Set up cookie to store small amounts of data on the client-side
+app.use(cookieParser());
 
 // Set the view engine to EJS
 app.set('view engine', 'ejs');
@@ -23,36 +29,73 @@ app.get('/', (req, res) => {
   res.redirect('/index.html');
 });
 
+// Set up index.html
 app.get('/index.html', (req, res) => {
-  res.render('index')
+  res.render('index');
+});
+
+// Set up dashboard
+app.get('/dashboard.html', (req, res) => {
+  res.render('dashboard');
 });
 
 // Define a middleware function to handle step 1 of the POST request
-const handleStep1 = (req, res, next) => {
+const handleStep1 = async (req, res, next) => {
   // Process the request body to get data for step 2
-  const { url, username, password } = req.body;
+  const { hosturl, username, password } = req.body;
+
+  // Prepare login data
+  const data = {
+    username: username,
+    password: password
+  };
+
+  const parsedUrl = url.parse(hosturl, true);
+  const loginUrl = parsedUrl.href + 'token';
+
+  const { tenantId, jwt } = await fetch(loginUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+    .then(response => {
+      if (response.ok) {
+        // Success! User is logged in.
+        return response.json();
+      } else {
+        // Handle error response from server.
+      }
+    })
+    .catch(error => {
+      // Handle network error.
+    });
 
   // Save the data to the request object
-  req.step1Data = { url, username, password };
+  const apiUrl = parsedUrl.protocol + '://' + 'api.' + parsedUrl.host + parsedUrl.path;
+  req.step1Data = { apiUrl, tenantId, jwt };
+  //console.log(req.step1Data);
 
   // Call the next middleware function to handle step 2
-  console.log(step1Data)
   next();
 };
 
 // Define a middleware function to handle step 2 of the POST request
 const handleStep2 = (req, res) => {
   // Get the data from step 1 from the request object
-  const { url, username, password } = req.step1Data;
+  const { apiUrl, tenantId, jwt } = req.step1Data;
 
-  // Process the request body to get data for step 3
-  //const { password } = req.body;
-
-  // Save the data to the request object
-  //req.step2Data = { name, email, password };
+  // Set a cookie with the name and the value
+  res.cookie('apiUrl', apiUrl);
+  res.cookie('tenantId', tenantId);
+  
+  // Setup the bearer token 
+   const token = 'Bearer ' + jwt;  
+  res.cookie('token', token);
 
   // Send a response indicating that all steps are complete
-  res.send('POST request with multiple steps complete!');
+  res.redirect('/dashboard.html');
 };
 
 app.post(('/login'), handleStep1, handleStep2);
