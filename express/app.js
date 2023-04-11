@@ -4,11 +4,20 @@ const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
 const url = require('url');
 const cookieParser = require('cookie-parser');
+const FormData = require('form-data');
+const multer = require('multer');
 
+// Started with Node.js and Express
 const app = express();
+
+// Handle the file upload and save the file to a temporary directory
+const upload = multer({ dest: 'uploads/' });
 
 // Set up morgan middleware to log requests
 app.use(morgan('dev'));
+
+// To append a file uploaded with a form to an existing FormData object
+app.use(fileUpload());
 
 // Set up body-parser middleware to parse request bodies
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -145,7 +154,65 @@ const venuesStep2 = (req, res) => {
 
 app.get(('/venues'), venuesStep1, venuesStep2);
 
-app.post('/venues/aps');
+// Define a middleware function to handle step 1 of the GET request
+const importStep1 = async (req, res) => {
+
+  if (!req.files && !req.files.file) {
+    // handle case where file was not uploaded
+    console.log('Error return')
+    return
+  }
+
+  // Append uploaded file to formData
+  const formData = new FormData();
+  const uploadedFile = req.files.file;
+  formData.append('file', uploadedFile.data, uploadedFile.name);
+
+  // wait for the file data to be available
+  await uploadedFile.data;
+  formData.append('file', uploadedFile.data, uploadedFile.name);
+
+
+  // Get the value of the cookie with the name 'myCookie'
+  const apiUrl = req.cookies['apiUrl'];
+  const token = req.cookies['token'];
+  const importApUrl = apiUrl + 'venues/aps';
+
+  console.log('App fetch POST', importApUrl);
+  fetch(importApUrl, {
+    body: formData,
+    headers: {
+      method: 'POST',
+      'Authorization': token
+    }
+  })
+    .then(response => {
+      if (response.ok) {
+        // Success!
+        return response.json();
+      } else {
+        // Handle error response from server.
+        console.log('App fetch POST ERROR', response.body)
+      }
+    })
+    .catch(error => {
+      // Handle network error.
+      console.log('App fetch POST ERROR', response.body)
+    });
+
+
+  // Save the data to the request object
+  //req.step1Data = { data };
+  //console.log('App fetch data:', data);
+
+  // Call the next middleware function to handle step 2
+  //next();
+  res.send('Success');
+};
+
+
+//app.post('/venues/aps', upload.single('csvfile'), importStep1);
+app.post('/venues/aps', upload.single('file'), importStep1);
 
 app.get('/importap.html', (req, res) => {
   res.render('importap');
