@@ -56,19 +56,21 @@
             background-color: #3e8e41;
         }
     </style>
-    <title>Dashboard</title>
+    <title>Venue List</title>
 </head>
 
 <body>
     <main>
         <div class="container">
-            <h2>Welcome!</h2>
-            <p>You have successfully logged in.</p>
+            <h2>Venues</h2>
             <ul>
-                <li><a href="/venues">Get venues</a></li>
-                <li><a href="#">Import AP</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href="#">Logout</a></li>
+                <% for (var i=0; i < venues.length; i++) { %>
+                    <li>
+                        <a href="#">
+                            <%= venues[i].name %>
+                        </a>
+                    </li>
+                    <% } %>
             </ul>
         </div>
     </main>
