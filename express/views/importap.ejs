@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #3e8e41;
+        }
+    </style>
+    <title>Import AP</title>
+</head>
+
+<body>
+    <div class="container">
+
+        <h2>Upload file</h2>
+
+        <form action="/venues/aps" method="post" enctype="multipart/form-data">
+            <label for="file">Select a file:</label>
+            <input type="file" name="csvfile" accept="text/csv" required>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+</body>
+
+</html>

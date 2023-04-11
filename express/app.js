@@ -106,7 +106,7 @@ const venuesStep1 = async (req, res, next) => {
   const apiUrl = req.cookies['apiUrl'];
   const token = req.cookies['token'];
   const veunesUrl = apiUrl + 'venues';
-  console.log('App fetch GET', veunesUrl)
+  console.log('App fetch GET', veunesUrl);
 
   const data = await fetch(veunesUrl, {
     headers: {
@@ -128,7 +128,7 @@ const venuesStep1 = async (req, res, next) => {
 
   // Save the data to the request object
   req.step1Data = { data };
-  console.log('App fetch data:', data)
+  console.log('App fetch data:', data);
 
   // Call the next middleware function to handle step 2
   next();
@@ -145,6 +145,11 @@ const venuesStep2 = (req, res) => {
 
 app.get(('/venues'), venuesStep1, venuesStep2);
 
+app.post('/venues/aps');
+
+app.get('/importap.html', (req, res) => {
+  res.render('importap');
+});
 
 // Start server
 app.listen(8080, () => {
