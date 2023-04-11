@@ -11,12 +11,20 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// Set the view engine to EJS
+app.set('view engine', 'ejs');
+
 // Set up satic folder
 app.use(express.static('public'));
 
 // Set up root
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  // res.send('Hello World!');
+  res.redirect('/index.html');
+});
+
+app.get('/index.html', (req, res) => {
+  res.render('index')
 });
 
 // Define a middleware function to handle step 1 of the POST request
