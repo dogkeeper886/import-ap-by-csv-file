@@ -52,7 +52,7 @@ const handleStep1 = async (req, res, next) => {
 
   const parsedUrl = url.parse(hosturl, true);
   const loginUrl = parsedUrl.href + 'token';
-
+  console.log('App fetch POST ', loginUrl);
   const { tenantId, jwt } = await fetch(loginUrl, {
     method: 'POST',
     headers: {
@@ -75,7 +75,7 @@ const handleStep1 = async (req, res, next) => {
   // Save the data to the request object
   const apiUrl = parsedUrl.protocol + '://' + 'api.' + parsedUrl.host + parsedUrl.path;
   req.step1Data = { apiUrl, tenantId, jwt };
-  //console.log(req.step1Data);
+  console.log('App fetch data:', req.step1Data)
 
   // Call the next middleware function to handle step 2
   next();
@@ -89,9 +89,9 @@ const handleStep2 = (req, res) => {
   // Set a cookie with the name and the value
   res.cookie('apiUrl', apiUrl);
   res.cookie('tenantId', tenantId);
-  
+
   // Setup the bearer token 
-   const token = 'Bearer ' + jwt;  
+  const token = 'Bearer ' + jwt;
   res.cookie('token', token);
 
   // Send a response indicating that all steps are complete
