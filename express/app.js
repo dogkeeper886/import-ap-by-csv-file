@@ -29,20 +29,21 @@ app.set('view engine', 'ejs');
 // Set up satic folder
 app.use(express.static('public'));
 
-// Set up root
+// Set up routes
 app.get('/', (req, res) => {
-  // res.send('Hello World!');
   res.redirect('/index.html');
 });
 
-// Set up index.html
 app.get('/index.html', (req, res) => {
   res.render('index');
 });
 
-// Set up dashboard
-app.get('/dashboard.html', (req, res) => {
-  res.render('dashboard');
+app.get('/requestAuthentication.html', (req, res) => {
+  res.render('requestAuthentication');
+});
+
+app.get('/getVenueList.html', (req, res) => {
+  res.render('getVenueList');
 });
 
 // Define a middleware function to handle step 1 of the POST request
@@ -101,10 +102,10 @@ const loginStep2 = (req, res) => {
   res.cookie('token', token);
 
   // Send a response indicating that all steps are complete
-  res.redirect('/dashboard.html');
+  res.redirect('/index.html');
 };
 
-app.post(('/login'), loginStep1, loginStep2);
+app.post(('/token'), loginStep1, loginStep2);
 
 // Define a middleware function to handle step 1 of the GET request
 const venuesStep1 = async (req, res, next) => {

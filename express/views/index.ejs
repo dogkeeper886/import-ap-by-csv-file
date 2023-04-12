@@ -5,57 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <style>
-        label {
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        input[type="submit"] {
-            background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 3px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #3e8e41;
-        }
-    </style>
-    <title>Login</title>
+    <title>Dashboard</title>
 </head>
 
 <body>
     <main>
         <div class="container">
-            <h2>Login</h2>
-            <form action="/login" method="post">
-                <label for="hosturl">URL:</label>
-                <input type="text" id="hosturl" name="hosturl" required>
-
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-
-                <input type="submit" value="Login">
-            </form>
+            <h2>Welcome!</h2>
+            <p>This is an API client that is designed to interact with a web-based API. You can easily send APIs by
+                clicking button. To access the resource, you need to log in to generate a JWT token.</p>
+            <ul>
+                <li><a href="/getVenueList.html">Get Venue List</a></li>
+                <li><a href="/importap.html">Import AP from file</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="/requestAuthentication.html">Login</a></li>
+            </ul>
         </div>
     </main>
 </body>
