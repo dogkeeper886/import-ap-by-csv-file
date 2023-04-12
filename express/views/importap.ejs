@@ -36,16 +36,19 @@
 </head>
 
 <body>
-    <div class="container">
+    <main>
+        <div class="container">
 
-        <h2>Upload file</h2>
+            <h2>Upload file</h2>
 
-        <form action="/venues/aps" method="post" enctype="multipart/form-data">
-            <label for="file">Select a file:</label>
-            <input type="file" name="file" accept="text/csv" required>
-            <button type="submit">Upload</button>
-        </form>
-    </div>
+            <form action="/venues/aps" method="post" enctype="multipart/form-data">
+                <label for="file">Select a file:</label>
+                <input type="file" name="file" accept="text/csv" required>
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+    </main>
+
 </body>
 
 </html>

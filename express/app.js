@@ -108,7 +108,7 @@ app.post(('/login'), loginStep1, loginStep2);
 
 // Define a middleware function to handle step 1 of the GET request
 const venuesStep1 = async (req, res, next) => {
-  // Get the value of the cookie with the name 'myCookie'
+  // Get the value of the cookie 
   const apiUrl = req.cookies['apiUrl'];
   const token = req.cookies['token'];
   const veunesUrl = apiUrl + 'venues';
@@ -153,6 +153,9 @@ app.get(('/venues'), venuesStep1, venuesStep2);
 
 // Define a middleware function to handle step 1 of the POST request
 const importStep1 = (req, res, next) => {
+  // req.file contains information about the uploaded file
+  console.log('Receive file', req.file);
+
   // Create a new FormData object
   const formData = new FormData();
 
@@ -167,41 +170,79 @@ const importStep1 = (req, res, next) => {
 };
 
 // Define a middleware function to handle step 1 of the POST request
-const importStep2 = async (req, res) => {
+const importStep2 = async (req, res, next) => {
   // Get the data from step 1 from the request object
   const { formData } = req.step1Data;
 
-
-  // Get the value of the cookie with the name 'myCookie'
+  // Get the value of the cookie 
   const apiUrl = req.cookies['apiUrl'];
   const token = req.cookies['token'];
   const importApUrl = apiUrl + 'venues/aps';
-  const boundary = Math.random().toString(36).substring(2);
 
   // Make the POST request using fetch
   console.log('App fetch POST', importApUrl);
-  data = await fetch(importApUrl, {
+  //const data = await fetch(importApUrl, {
+
+  const data = await fetch(importApUrl, {
     method: 'POST',
     body: formData,
     headers: {
       'Authorization': token,
-      'Content-Type': 'multipart/form-data; boundary=' + boundary
     }
   })
     .then(response => {
-      console.log('File uploaded successfully');
+      console.log('App fetch: File uploaded successfully');
       return response.json();
     })
     .catch(error => {
-      console.error('Error uploading file:', error);
+      console.error('App fetch: Error uploading file:', error);
     });
-  
+
   console.log('App fetch data:', data)
-  res.send(data);
+
+  // Save the data to the request object
+  const requestId = data.requestId
+  req.step2Data = { requestId };
+
+  // Call the next middleware function to handle step 2
+  next();
+
+  //res.send(data);
 
 }
 
-app.post('/venues/aps', upload.single('file'), importStep1, importStep2);
+// Define a middleware function to check request detail
+const requestDetail = async (req, res) => {
+  // Get the data from step 1 from the request object
+  const { requestId } = req.step2Data
+
+  // Get the value of the cookie 
+  const apiUrl = req.cookies['apiUrl'];
+  const tenantId = req.cookies['tenantId'];
+  const token = req.cookies['token'];
+  const requestUrl = apiUrl + 'venues/aps/importResults?requestId=' + requestId;
+  // Make the POST request using fetch
+  console.log('App fetch GET', requestUrl);
+  const body = await fetch(requestUrl, {
+    method: 'GET',
+    headers: {
+      'Authorization': token,
+    }
+  })
+    .then(response => {
+      //console.log('File uploaded successfully');
+      return response.body;
+    })
+    .catch(error => {
+      //console.error('Error uploading file:', error);
+    });
+
+  console.log('App fetch data:', body)
+  res.send(body);
+
+}
+
+app.post('/venues/aps', upload.single('file'), importStep1, importStep2, requestDetail);
 
 app.get('/importap.html', (req, res) => {
   res.render('importap');
