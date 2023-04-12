@@ -11,13 +11,10 @@ const multer = require('multer');
 const app = express();
 
 // Handle the file upload and save the file to a temporary directory
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Set up morgan middleware to log requests
 app.use(morgan('dev'));
-
-// To append a file uploaded with a form to an existing FormData object
-app.use(fileUpload());
 
 // Set up body-parser middleware to parse request bodies
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -154,65 +151,57 @@ const venuesStep2 = (req, res) => {
 
 app.get(('/venues'), venuesStep1, venuesStep2);
 
-// Define a middleware function to handle step 1 of the GET request
-const importStep1 = async (req, res) => {
-
-  if (!req.files && !req.files.file) {
-    // handle case where file was not uploaded
-    console.log('Error return')
-    return
-  }
-
-  // Append uploaded file to formData
+// Define a middleware function to handle step 1 of the POST request
+const importStep1 = (req, res, next) => {
+  // Create a new FormData object
   const formData = new FormData();
-  const uploadedFile = req.files.file;
-  formData.append('file', uploadedFile.data, uploadedFile.name);
 
-  // wait for the file data to be available
-  await uploadedFile.data;
-  formData.append('file', uploadedFile.data, uploadedFile.name);
+  // Append the file to the formData object
+  formData.append('file', req.file.buffer, req.file.originalname);
+
+  // Save the data to the request object
+  req.step1Data = { formData };
+
+  // Call the next middleware function to handle step 2
+  next();
+};
+
+// Define a middleware function to handle step 1 of the POST request
+const importStep2 = async (req, res) => {
+  // Get the data from step 1 from the request object
+  const { formData } = req.step1Data;
 
 
   // Get the value of the cookie with the name 'myCookie'
   const apiUrl = req.cookies['apiUrl'];
   const token = req.cookies['token'];
   const importApUrl = apiUrl + 'venues/aps';
+  const boundary = Math.random().toString(36).substring(2);
 
+  // Make the POST request using fetch
   console.log('App fetch POST', importApUrl);
-  fetch(importApUrl, {
+  data = await fetch(importApUrl, {
+    method: 'POST',
     body: formData,
     headers: {
-      method: 'POST',
-      'Authorization': token
+      'Authorization': token,
+      'Content-Type': 'multipart/form-data; boundary=' + boundary
     }
   })
     .then(response => {
-      if (response.ok) {
-        // Success!
-        return response.json();
-      } else {
-        // Handle error response from server.
-        console.log('App fetch POST ERROR', response.body)
-      }
+      console.log('File uploaded successfully');
+      return response.json();
     })
     .catch(error => {
-      // Handle network error.
-      console.log('App fetch POST ERROR', response.body)
+      console.error('Error uploading file:', error);
     });
+  
+  console.log('App fetch data:', data)
+  res.send(data);
 
+}
 
-  // Save the data to the request object
-  //req.step1Data = { data };
-  //console.log('App fetch data:', data);
-
-  // Call the next middleware function to handle step 2
-  //next();
-  res.send('Success');
-};
-
-
-//app.post('/venues/aps', upload.single('csvfile'), importStep1);
-app.post('/venues/aps', upload.single('file'), importStep1);
+app.post('/venues/aps', upload.single('file'), importStep1, importStep2);
 
 app.get('/importap.html', (req, res) => {
   res.render('importap');
