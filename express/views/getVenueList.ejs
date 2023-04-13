@@ -12,15 +12,40 @@
     <main>
         <div class="container">
             <h2>Venues</h2>
-            <p>GET /venues</p>
-            <ul>
-                <li>
-                    <a href="#">
-                    </a>
-                </li>
+            <div class="url-container">
+                <button id="myButton">Click me!</button>
+                <span class="method">GET</span>
+                <span class="uri">/venues</span>
+            </div>
+
+            <ul id="responseContainer">
+                
             </ul>
         </div>
     </main>
+
+    <script type="text/javascript">
+        const myButton = document.getElementById('myButton');
+        const responseContainer = document.getElementById('responseContainer');
+
+        myButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/venues');
+                const data = await response.json();
+                data.forEach(element => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.textContent = element.name;
+                    li.appendChild(a);
+                    responseContainer.appendChild(li);
+                    //responseContainer.innerHTML = `<li><a>${element.name}</a></li>`;
+                });
+            } catch (error) {
+                console.error(error);
+                responseContainer.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        });
+    </script>
 </body>
 
 </html>

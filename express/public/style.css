@@ -44,7 +44,8 @@ li {
     margin-bottom: 10px;
 }
 
-a {
+a,
+#myButton {
     display: block;
     padding: 10px;
     background-color: #4CAF50;
@@ -55,6 +56,19 @@ a {
     text-align: center;
 }
 
-a:hover {
+a:hover,
+#myButton:hover {
     background-color: #3e8e41;
+}
+
+#myButton {
+    border-style: none;
+    line-height: 1rem;
+}
+
+.url-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
 }

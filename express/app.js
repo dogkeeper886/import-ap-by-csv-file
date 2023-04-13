@@ -112,10 +112,10 @@ const venuesStep1 = async (req, res, next) => {
   // Get the value of the cookie 
   const apiUrl = req.cookies['apiUrl'];
   const token = req.cookies['token'];
-  const veunesUrl = apiUrl + 'venues';
-  console.log('App fetch GET', veunesUrl);
+  const requestUrl = apiUrl + 'venues';
+  console.log('App fetch GET', requestUrl);
 
-  const data = await fetch(veunesUrl, {
+  const data = await fetch(requestUrl, {
     headers: {
       method: 'GET',
       'Authorization': token
@@ -127,6 +127,7 @@ const venuesStep1 = async (req, res, next) => {
         return response.json();
       } else {
         // Handle error response from server.
+        return response.body;
       }
     })
     .catch(error => {
@@ -134,11 +135,11 @@ const venuesStep1 = async (req, res, next) => {
     });
 
   // Save the data to the request object
-  req.step1Data = { data };
+  //req.step1Data = { data };
   console.log('App fetch data:', data);
-
+  res.send(data);
   // Call the next middleware function to handle step 2
-  next();
+  //next();
 };
 
 // Define a middleware function to handle step 2 of the GET request
@@ -150,7 +151,8 @@ const venuesStep2 = (req, res) => {
   res.render('venuelist', { venues: data });
 };
 
-app.get(('/venues'), venuesStep1, venuesStep2);
+app.get(('/venues'), venuesStep1
+);
 
 // Define a middleware function to handle step 1 of the POST request
 const importStep1 = (req, res, next) => {
@@ -171,7 +173,7 @@ const importStep1 = (req, res, next) => {
 };
 
 // Define a middleware function to handle step 1 of the POST request
-const importStep2 = async (req, res, next) => {
+const importStep2 = async (req, res) => {
   // Get the data from step 1 from the request object
   const { formData } = req.step1Data;
 
@@ -206,9 +208,9 @@ const importStep2 = async (req, res, next) => {
   req.step2Data = { requestId };
 
   // Call the next middleware function to handle step 2
-  next();
+  //next();
 
-  //res.send(data);
+  res.send(data);
 
 }
 
@@ -243,7 +245,7 @@ const requestDetail = async (req, res) => {
 
 }
 
-app.post('/venues/aps', upload.single('file'), importStep1, importStep2, requestDetail);
+app.post('/venues/aps', upload.single('file'), importStep1, importStep2);
 
 app.get('/importap.html', (req, res) => {
   res.render('importap');
