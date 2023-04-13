@@ -46,6 +46,10 @@ app.get('/getVenueList.html', (req, res) => {
   res.render('getVenueList');
 });
 
+app.get('/getActivity.html', (req, res) => {
+  res.render('getActivity');
+});
+
 // Define a middleware function to handle step 1 of the POST request
 const loginStep1 = async (req, res, next) => {
   // Process the request body to get data for step 2
@@ -107,14 +111,13 @@ const loginStep2 = (req, res) => {
 
 app.post(('/token'), loginStep1, loginStep2);
 
-// Define a middleware function to handle step 1 of the GET request
-const venuesStep1 = async (req, res, next) => {
-  // Get the value of the cookie 
+const fetchGet = async (req, uri) => {
+  // Get the value from the cookie 
   const apiUrl = req.cookies['apiUrl'];
   const token = req.cookies['token'];
-  const requestUrl = apiUrl + 'venues';
-  console.log('App fetch GET', requestUrl);
+  const requestUrl = apiUrl + uri;
 
+  console.log('App fetch GET', requestUrl);
   const data = await fetch(requestUrl, {
     headers: {
       method: 'GET',
@@ -132,27 +135,26 @@ const venuesStep1 = async (req, res, next) => {
     })
     .catch(error => {
       // Handle network error.
+      console.log('App fetch error:', error)
+      return null;
     });
 
-  // Save the data to the request object
-  //req.step1Data = { data };
   console.log('App fetch data:', data);
-  res.send(data);
-  // Call the next middleware function to handle step 2
-  //next();
-};
+  return data;
+}
 
-// Define a middleware function to handle step 2 of the GET request
-const venuesStep2 = (req, res) => {
-  // Get the data from step 1 from the request object
-  const { data } = req.step1Data;
+app.get(('/venues'), async (req, res) => {
+  res.send(await fetchGet(req, 'venues'));
+});
 
-  // Send a response indicating that all steps are complete
-  res.render('venuelist', { venues: data });
-};
+app.get(('/activity'), async (req, res) => {
+  // Get the value from the cookie 
+  const tenantId = req.cookies['tenantId'];
+  const requestId = req.cookies['requestId'];
 
-app.get(('/venues'), venuesStep1
-);
+  const uri = 'api/tenant/' + tenantId + '/activity/' + requestId;
+  res.send(await fetchGet(req, uri));
+});
 
 // Define a middleware function to handle step 1 of the POST request
 const importStep1 = (req, res, next) => {
@@ -203,45 +205,11 @@ const importStep2 = async (req, res) => {
 
   console.log('App fetch data:', data)
 
-  // Save the data to the request object
+  // Set a cookie with the name and the value
   const requestId = data.requestId
-  req.step2Data = { requestId };
-
-  // Call the next middleware function to handle step 2
-  //next();
+  res.cookie('requestId', requestId);
 
   res.send(data);
-
-}
-
-// Define a middleware function to check request detail
-const requestDetail = async (req, res) => {
-  // Get the data from step 1 from the request object
-  const { requestId } = req.step2Data
-
-  // Get the value of the cookie 
-  const apiUrl = req.cookies['apiUrl'];
-  const tenantId = req.cookies['tenantId'];
-  const token = req.cookies['token'];
-  const requestUrl = apiUrl + 'venues/aps/importResults?requestId=' + requestId;
-  // Make the POST request using fetch
-  console.log('App fetch GET', requestUrl);
-  const body = await fetch(requestUrl, {
-    method: 'GET',
-    headers: {
-      'Authorization': token,
-    }
-  })
-    .then(response => {
-      //console.log('File uploaded successfully');
-      return response.body;
-    })
-    .catch(error => {
-      //console.error('Error uploading file:', error);
-    });
-
-  console.log('App fetch data:', body)
-  res.send(body);
 
 }
 
