@@ -50,6 +50,10 @@ app.get('/getActivity.html', (req, res) => {
   res.render('getActivity');
 });
 
+app.get('/getImportResults.html', (req, res) => {
+  res.render('getImportResults');
+});
+
 // Define a middleware function to handle step 1 of the POST request
 const loginStep1 = async (req, res, next) => {
   // Process the request body to get data for step 2
@@ -153,6 +157,14 @@ app.get(('/activity'), async (req, res) => {
   const requestId = req.cookies['requestId'];
 
   const uri = 'api/tenant/' + tenantId + '/activity/' + requestId;
+  res.send(await fetchGet(req, uri));
+});
+
+app.get(('/importResult'), async (req, res) => {
+  // Get the value from the cookie 
+  const requestId = req.cookies['requestId'];
+
+  const uri = 'venues/aps/importResults?requestId=' + requestId;
   res.send(await fetchGet(req, uri));
 });
 

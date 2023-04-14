@@ -5,17 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Get Venue List</title>
+    <title>Activity</title>
 </head>
 
 <body>
     <main>
         <div class="container">
-            <h2>Venues</h2>
+            <h2>Activity</h2>
             <div class="url-container">
-                <button id="myButton">Click me!</button>
-                <span class="method">GET</span>
-                <span class="uri">/venues</span>
+                <button id="myButton">GET</button>
+                <span class="uri">/api/tenant/{{tenantId}}/activity/{{requestId}}</span>
             </div>
 
             <ul id="responseContainer">
@@ -33,16 +32,13 @@
             responseContainer.innerHTML = "";
 
             try {
-                const response = await fetch('/venues');
+                const response = await fetch('/activity');
                 const data = await response.json();
-                data.forEach(element => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.textContent = element.name;
-                    li.appendChild(a);
-                    responseContainer.appendChild(li);
-                    //responseContainer.innerHTML = `<li><a>${element.name}</a></li>`;
-                });
+                const pre = document.createElement('pre');
+                const code = document.createElement('code');
+                code.textContent = JSON.stringify(data, null, 4);
+                pre.appendChild(code);
+                responseContainer.appendChild(pre);
             } catch (error) {
                 console.error(error);
                 responseContainer.innerHTML = `<p>Error: ${error.message}</p>`;
