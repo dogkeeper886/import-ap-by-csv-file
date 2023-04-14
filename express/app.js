@@ -149,7 +149,7 @@ app.post(('/token'), async (req, res) => {
   const token = 'Bearer ' + jwt;
   res.cookie('token', token);
 
-  res.send(data);
+  res.redirect('/index.html')
 });
 
 const fetchGet = async (req, uri) => {
