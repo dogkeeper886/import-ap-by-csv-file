@@ -54,38 +54,50 @@ app.get('/getImportResults.html', (req, res) => {
   res.render('getImportResults');
 });
 
+const fetchPOST = async (req, uri, content) => {
+  console.log('App fetch POST', uri);
+  console.log('App fetch content:', content);
+  const data = await fetch(uri, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: content
+  })
+    .then(response => {
+      if (response.ok) {
+        // Success!
+        return response.json();
+      } else {
+        // Handle error response from server.
+        return response.body;
+      }
+    })
+    .catch(error => {
+      // Handle network error.
+      console.log('App fetch error:', error)
+      return null;
+    });
+
+  console.log('App fetch data:', data);
+  return data;
+}
+
 // Define a middleware function to handle step 1 of the POST request
 const loginStep1 = async (req, res, next) => {
   // Process the request body to get data for step 2
   const { hosturl, username, password } = req.body;
 
   // Prepare login data
-  const data = {
+  const loginData = {
     username: username,
     password: password
   };
 
   const parsedUrl = url.parse(hosturl, true);
-  const loginUrl = parsedUrl.href + 'token';
-  console.log('App fetch POST ', loginUrl);
-  const { tenantId, jwt } = await fetch(loginUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  })
-    .then(response => {
-      if (response.ok) {
-        // Success! User is logged in.
-        return response.json();
-      } else {
-        // Handle error response from server.
-      }
-    })
-    .catch(error => {
-      // Handle network error.
-    });
+  const requestUrl = parsedUrl.href + 'token';
+
+  const loginResponse = await fetchPOST(req, requestUrl, JSON.stringify(loginData));
 
   // Save the data to the request object
   const apiUrl = parsedUrl.protocol + '//' + 'api.' + parsedUrl.host + parsedUrl.path;
@@ -113,7 +125,32 @@ const loginStep2 = (req, res) => {
   res.redirect('/index.html');
 };
 
-app.post(('/token'), loginStep1, loginStep2);
+app.post(('/token'), async (req, res) => {
+  // Process the request body to get data
+  const { hosturl, username, password } = req.body;
+
+  // Prepare login data
+  const loginData = {
+    username: username,
+    password: password
+  };
+
+  // Setup uri
+  const parsedUrl = url.parse(hosturl, true);
+  const requestUrl = parsedUrl.href + 'token';
+
+  const data = await fetchPOST(req, requestUrl, JSON.stringify(loginData));
+
+  // Set a cookie with the name and the value
+  const { tenantId, jwt } = data;
+  const apiUrl = parsedUrl.protocol + '//' + 'api.' + parsedUrl.host + parsedUrl.path;
+  res.cookie('apiUrl', apiUrl);
+  res.cookie('tenantId', tenantId);
+  const token = 'Bearer ' + jwt;
+  res.cookie('token', token);
+
+  res.send(data);
+});
 
 const fetchGet = async (req, uri) => {
   // Get the value from the cookie 
