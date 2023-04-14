@@ -83,48 +83,6 @@ const fetchPOST = async (req, uri, content) => {
   return data;
 }
 
-// Define a middleware function to handle step 1 of the POST request
-const loginStep1 = async (req, res, next) => {
-  // Process the request body to get data for step 2
-  const { hosturl, username, password } = req.body;
-
-  // Prepare login data
-  const loginData = {
-    username: username,
-    password: password
-  };
-
-  const parsedUrl = url.parse(hosturl, true);
-  const requestUrl = parsedUrl.href + 'token';
-
-  const loginResponse = await fetchPOST(req, requestUrl, JSON.stringify(loginData));
-
-  // Save the data to the request object
-  const apiUrl = parsedUrl.protocol + '//' + 'api.' + parsedUrl.host + parsedUrl.path;
-  req.step1Data = { apiUrl, tenantId, jwt };
-  console.log('App fetch data:', req.step1Data)
-
-  // Call the next middleware function to handle step 2
-  next();
-};
-
-// Define a middleware function to handle step 2 of the POST request
-const loginStep2 = (req, res) => {
-  // Get the data from step 1 from the request object
-  const { apiUrl, tenantId, jwt } = req.step1Data;
-
-  // Set a cookie with the name and the value
-  res.cookie('apiUrl', apiUrl);
-  res.cookie('tenantId', tenantId);
-
-  // Setup the bearer token 
-  const token = 'Bearer ' + jwt;
-  res.cookie('token', token);
-
-  // Send a response indicating that all steps are complete
-  res.redirect('/index.html');
-};
-
 app.post(('/token'), async (req, res) => {
   // Process the request body to get data
   const { hosturl, username, password } = req.body;
