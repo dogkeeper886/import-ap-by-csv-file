@@ -54,13 +54,18 @@ app.get('/getImportResults.html', (req, res) => {
   res.render('getImportResults');
 });
 
-const fetchPOST = async (req, uri, content) => {
+const fetchPost = async (req, uri, content) => {
+  // Get the value from the cookie 
+  const apiUrl = req.cookies['apiUrl'];
+  const token = req.cookies['token'];
+  const requestUrl = apiUrl + uri;
+
   console.log('App fetch POST', uri);
   console.log('App fetch content:', content);
-  const data = await fetch(uri, {
+  const data = await fetch(requestUrl, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Authorization': token
     },
     body: content
   })
@@ -84,6 +89,36 @@ const fetchPOST = async (req, uri, content) => {
 }
 
 app.post(('/token'), async (req, res) => {
+  // Define POST function
+  const fetchPostJson = async (req, uri, content) => {
+    console.log('App fetch POST', uri);
+    console.log('App fetch content:', content);
+    const data = await fetch(uri, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: content
+    })
+      .then(response => {
+        if (response.ok) {
+          // Success!
+          return response.json();
+        } else {
+          // Handle error response from server.
+          return response.body;
+        }
+      })
+      .catch(error => {
+        // Handle network error.
+        console.log('App fetch error:', error)
+        return null;
+      });
+
+    console.log('App fetch data:', data);
+    return data;
+  }
+
   // Process the request body to get data
   const { hosturl, username, password } = req.body;
 
@@ -97,7 +132,7 @@ app.post(('/token'), async (req, res) => {
   const parsedUrl = url.parse(hosturl, true);
   const requestUrl = parsedUrl.href + 'token';
 
-  const data = await fetchPOST(req, requestUrl, JSON.stringify(loginData));
+  const data = await fetchPostJson(req, requestUrl, JSON.stringify(loginData));
 
   // Set a cookie with the name and the value
   const { tenantId, jwt } = data;
@@ -118,8 +153,8 @@ const fetchGet = async (req, uri) => {
 
   console.log('App fetch GET', requestUrl);
   const data = await fetch(requestUrl, {
+    method: 'GET',
     headers: {
-      method: 'GET',
       'Authorization': token
     }
   })
@@ -216,11 +251,28 @@ const importStep2 = async (req, res) => {
   const requestId = data.requestId
   res.cookie('requestId', requestId);
 
-  res.send(data);
-
+  res.redirect('/getImportResults.html');
 }
 
-app.post('/venues/aps', upload.single('file'), importStep1, importStep2);
+app.post('/venues/aps', upload.single('file'), async (req, res) => {
+  // req.file contains information about the uploaded file
+  console.log('Receive file', req.file);
+
+  // Create a new FormData object
+  const formData = new FormData();
+
+  // Append the file to the formData object
+  formData.append('file', req.file.buffer, req.file.originalname);
+
+  // Make the POST request using fetch
+  const data = await fetchPost(req, 'venues/aps', formData);
+
+  // Set a cookie with the name and the value
+  const requestId = data.requestId
+  res.cookie('requestId', requestId);
+
+  res.redirect('/getImportResults.html');
+});
 
 app.get('/importap.html', (req, res) => {
   res.render('importap');
