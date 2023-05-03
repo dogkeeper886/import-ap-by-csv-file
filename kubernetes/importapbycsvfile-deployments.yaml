@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: importapbycsvfile
+  name: importapbycsvfile
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: importapbycsvfile
+  template:
+    metadata:
+      labels:
+        app: importapbycsvfile
+    spec:
+      containers:
+      - image: dogkeeper886/importapbycsvfile:0.01
+        imagePullPolicy: IfNotPresent
+        name: importapbycsvfile
+        resources:
+          limits:
+            cpu: 250m
+            ephemeral-storage: 1Gi
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            ephemeral-storage: 1Gi
+            memory: 512Mi               
